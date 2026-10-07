@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-stone-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Craft Workbench</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        plywood: {
+                            50: '#fdfbf7',
+                            100: '#f7f2e8',
+                            200: '#eee3d0',
+                            300: '#e1cdb0',
+                            400: '#d1b28b',
+                            500: '#be9364',
+                            600: '#aa7a51',
+                            700: '#8c5f3e',
+                            800: '#734d35',
+                        },
+                        studio: {
+                            bg: '#f4f0ea',
+                            panel: '#ffffff',
+                            accent: '#e06d53',
+                            accentHover: '#c8573d',
+                            sage: '#78938a',
+                            ochre: '#e5a93c'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', cursive;
+        }
+        /* Custom Plywood Table Pattern */
+        .plywood-texture {
+            background-color: #f2e7d5;
+            background-image: 
+                radial-gradient(#e0cfb3 1px, transparent 0),
+                linear-gradient(to right, rgba(205, 175, 133, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(205, 175, 133, 0.1) 1px, transparent 1px);
+            background-size: 24px 24px, 40px 40px, 40px 40px;
+        }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1ebd9;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4be9b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #be9364;
+        }
+        .craft-btn {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .craft-btn:active {
+            transform: scale(0.95);
+        }
+        .sparkle-particle {
+            pointer-events: none;
+            position: absolute;
+            animation: sparkleFloat 1s forwards ease-out;
+        }
+        @keyframes sparkleFloat {
+            0% { opacity: 1; transform: translate(0, 0) scale(0.5) rotate(0deg); }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(180deg); }
+        }
+    </style>
+</head>
+<body class="h-full text-stone-800 flex flex-col overflow-hidden bg-studio-bg antialiased">
+
+    <!-- Top Studio Header -->
+    <header class="bg-white/90 backdrop-blur border-b border-plywood-200 px-4 py-2.5 flex items-center justify-between shrink-0 z-20 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-studio-accent text-white flex items-center justify-center shadow-md text-xl font-bold">
+                <i class="fa-solid fa-scissors"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-xl font-bold text-stone-900 tracking-wide">Craft Studio Workbench</h1>
+                    <span id="autoSaveBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 transition-all">
+                        <span class="w-1.5 h-1.5 mr-1 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Saved
+                    </span>
+                </div>
+                <p class="text-xs text-stone-500">Scandinavian Plywood Workspace for Creative DIY Building</p>
+            </div>
+        </div>
+
+        <!-- Top Header Action Buttons -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <button id="btnIdeaBook" onclick="toggleIdeaBookModal()" class="craft-btn px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                <span class="hidden sm:inline">Idea Blueprints</span>
+            </button>
+
+            <button id="btnGallery" onclick="openGalleryModal()" class="craft-btn px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-box-archive text-plywood-700"></i>
+                <span>Studio Shelf</span>
+                <span id="shelfCountBadge" class="ml-1 bg-plywood-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">0</span>
+            </button>
+
+            <button id="btnSaveCraft" onclick="promptSaveCraft()" class="craft-btn px-3.5 py-1.5 bg-studio-accent hover:bg-studio-accentHover text-white rounded-xl text-xs font-bold shadow-sm flex items-center space-x-1.5">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Save Craft</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Application Container (Fills viewport below header) -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden p-2 sm:p-3 gap-3">
+
+        <!-- LEFT PANEL: Craft Supplies Gallery (Scrollable, height capped) -->
+        <aside class="w-full lg:w-80 bg-white rounded-2xl border border-plywood-200 shadow-sm flex flex-col shrink-0 overflow-hidden lg:h-[calc(100vh-4.25rem)]">
+            <!-- Panel Header & Search -->
+            <div class="p-3 border-b border-plywood-100 bg-plywood-50 shrink-0 space-y-2">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-display font-bold text-stone-800 text-base flex items-center">
+                        <i class="fa-solid fa-cubes text-studio-accent mr-2"></i> Craft Supplies
+                    </h2>
+                    <span id="suppliesCountTag" class="text-[11px] font-semibold bg-plywood-200 text-plywood-800 px-2 py-0.5 rounded-full">30+ Items</span>
+                </div>
+
+                <!-- Category Pills -->
+                <div id="categoryPills" class="flex items-center space-x-1 overflow-x-auto pb-1 text-xs">
+                    <button onclick="filterCategory('all')" class="cat-pill active px-2.5 py-1 rounded-lg font-semibold bg-studio-accent text-white shrink-0">All</button>
+                    <button onclick="filterCategory('bases')" class="cat-pill px-2.5 py-1 rounded-lg font-medium bg-stone-100 text-stone-700 hover:bg-stone-200 shrink-0">Bases</button>
+                    <button onclick="filterCategory('joiners')" class="cat-pill px-2.5 py-1 rounded-lg font-medium bg-stone-100 text-stone-700 hover:bg-stone-200 shrink-0">Joiners</button>
+                    <button onclick="filterCategory('details')" class="cat-pill px-2.5 py-1 rounded-lg font-medium bg-stone-100 text-stone-700 hover:bg-stone-200 shrink-0">Details</button>
+                    <button onclick="filterCategory('nature')" class="cat-pill px-2.5 py-1 rounded-lg font-medium bg-stone-100 text-stone-700 hover:bg-stone-200 shrink-0">Nature</button>
+                    <button onclick="filterCategory('parts')" class="cat-pill px-2.5 py-1 rounded-lg font-medium bg-stone-100 text-stone-700 hover:bg-stone-200 shrink-0">Parts</button>
+                </div>
+            </div>
+
+            <!-- Scrollable Craft Materials Grid -->
+            <div id="suppliesGrid" class="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-2.5 align-content-start">
+                <!-- Material items dynamically rendered here -->
+            </div>
+        </aside>
+
+        <!-- CENTER AREA: Expanded Plywood Canvas Workbench -->
+        <section class="flex-1 flex flex-col bg-white rounded-2xl border border-plywood-200 shadow-sm overflow-hidden lg:h-[calc(100vh-4.25rem)] relative">
+            
+            <!-- Workbench Control Toolbar -->
+            <div class="p-2.5 bg-stone-50 border-b border-plywood-200 flex flex-wrap items-center justify-between gap-2 shrink-0 z-10">
+                
+                <!-- Active Item Editing Tools -->
+                <div class="flex items-center space-x-1.5 flex-wrap">
+                    <span class="text-xs font-bold text-stone-500 mr-1">Active Item:</span>
+                    <button onclick="rotateActiveItem(-15)" title="Rotate Left" class="craft-btn p-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-rotate-left"></i></button>
+                    <button onclick="rotateActiveItem(15)" title="Rotate Right" class="craft-btn p-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button onclick="scaleActiveItem(1.1)" title="Zoom In" class="craft-btn p-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button onclick="scaleActiveItem(0.9)" title="Zoom Out" class="craft-btn p-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <button onclick="changeActiveLayer(1)" title="Bring Forward" class="craft-btn p-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-layer-group"></i><i class="fa-solid fa-arrow-up text-[9px]"></i></button>
+                    <button onclick="changeActiveLayer(-1)" title="Send Backward" class="craft-btn p-1.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-layer-group"></i><i class="fa-solid fa-arrow-down text-[9px]"></i></button>
+
+                    <div class="h-4 w-px bg-stone-300 mx-1"></div>
+
+                    <!-- Paint Palette Selector -->
+                    <div class="flex items-center space-x-1 bg-white p-1 rounded-lg border border-stone-200">
+                        <span class="text-[10px] font-bold text-stone-400 px-1"><i class="fa-solid fa-paint-roller"></i></span>
+                        <div id="colorPalette" class="flex items-center space-x-1">
+                            <!-- Color buttons dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Sparkle Effect Toggle -->
+                    <button id="btnSparkle" onclick="toggleActiveSparkle()" title="Add Glitter Sparkles!" class="craft-btn px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                        <span>Glitter</span>
+                    </button>
+                </div>
+
+                <!-- Workbench Table Management -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="triggerWiggleAnimation()" class="craft-btn px-3 py-1 bg-studio-sage hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center space-x-1">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Test & Wiggle</span>
+                    </button>
+                    <button onclick="confirmClearWorkbench()" class="craft-btn px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold shadow-sm flex items-center space-x-1">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Clear Table</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Table Surface Area (Scales dynamically to viewport bottom) -->
+            <div id="canvasContainer" class="flex-1 relative plywood-texture overflow-hidden cursor-crosshair">
+                <canvas id="workbenchCanvas" class="w-full h-full block"></canvas>
+
+                <!-- On-Canvas Empty State Helper -->
+                <div id="canvasEmptyGuide" class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-white/80 backdrop-blur shadow-md flex items-center justify-center text-3xl text-plywood-600 mb-3 border border-plywood-200">
+                        <i class="fa-solid fa-hand-pointer"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-stone-700 text-lg mb-1">Your Workbench is Ready!</h3>
+                    <p class="text-xs text-stone-500 max-w-sm">Click any craft supply from the left catalog to place it on your Scandinavian plywood table. Drag, rotate, scale, and paint your creations!</p>
+                </div>
+            </div>
+
+            <!-- Bottom Canvas Status Footer -->
+            <div class="p-2 bg-stone-100 border-t border-plywood-200 text-xs text-stone-600 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-3">
+                    <span><i class="fa-solid fa-shapes text-plywood-600 mr-1"></i> Parts on Table: <strong id="partCountText">0</strong></span>
+                    <span id="selectedItemNameTag" class="text-stone-500 italic hidden">Selected: <strong class="text-stone-800 not-italic" id="selectedNameText">-</strong></span>
+                </div>
+                <div class="text-[11px] text-stone-400">
+                    Touch & Mouse Compatible • Auto-Saves Locally
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Table Layers & Details (Collapsible/Height Capped) -->
+        <aside class="w-full lg:w-64 bg-white rounded-2xl border border-plywood-200 shadow-sm flex flex-col shrink-0 overflow-hidden lg:h-[calc(100vh-4.25rem)]">
+            <div class="p-3 border-b border-plywood-100 bg-plywood-50 flex items-center justify-between">
+                <h3 class="font-display font-bold text-stone-800 text-sm flex items-center">
+                    <i class="fa-solid fa-layer-group text-plywood-700 mr-2"></i> Table Layers
+                </h3>
+                <button onclick="deselectItem()" class="text-[11px] text-stone-500 hover:text-stone-800 underline">Deselect All</button>
+            </div>
+
+            <div id="layersList" class="flex-1 overflow-y-auto p-2 space-y-1.5">
+                <!-- Dynamic layers list rendered here -->
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- MODAL 1: Studio Shelf (Saved Crafts Gallery) -->
+    <div id="modalGallery" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 bg-plywood-50 border-b border-plywood-200 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="p-2 bg-plywood-200 text-plywood-800 rounded-xl">
+                        <i class="fa-solid fa-box-archive text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-stone-900">Studio Shelf Gallery</h3>
+                        <p class="text-xs text-stone-500">Your saved DIY craft creations stored safely in local storage</p>
+                    </div>
+                </div>
+                <button onclick="closeGalleryModal()" class="text-stone-400 hover:text-stone-600 text-xl p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="galleryGrid" class="p-6 overflow-y-auto flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Saved crafts dynamically rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Idea Book Blueprints -->
+    <div id="modalIdeaBook" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-lightbulb text-amber-500 text-xl"></i>
+                    <h3 class="font-display font-bold text-lg text-stone-900">Craft Blueprints & Ideas</h3>
+                </div>
+                <button onclick="toggleIdeaBookModal()" class="text-stone-400 hover:text-stone-600 text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 flex-1" id="blueprintsContainer">
+                <!-- Blueprint recipes populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Custom Confirmation Dialog -->
+    <div id="modalConfirm" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center space-y-4">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmTitle" class="font-display font-bold text-lg text-stone-800">Are you sure?</h3>
+            <p id="confirmMessage" class="text-xs text-stone-600">This action cannot be undone.</p>
+            <div class="flex items-center justify-center space-x-3 pt-2">
+                <button id="btnConfirmCancel" class="px-4 py-2 border border-stone-300 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-50">Cancel</button>
+                <button id="btnConfirmOk" class="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow hover:bg-rose-700">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        const STORAGE_CURRENT_CANVAS = 'creative_craft_workbench_active_table_v2';
+        const STORAGE_SHELF_GALLERY = 'creative_craft_workbench_shelf_v2';
+
+        // Material Palette Colors (Scandinavian Craft Paints)
+        const CRAFT_COLORS = [
+            { id: 'natural', name: 'Natural', hex: null },
+            { id: 'terracotta', name: 'Terracotta', hex: '#d96b43' },
+            { id: 'sage', name: 'Sage Green', hex: '#78938a' },
+            { id: 'ochre', name: 'Ochre Yellow', hex: '#e5a93c' },
+            { id: 'dustyrose', name: 'Dusty Rose', hex: '#d88c9a' },
+            { id: 'slate', name: 'Slate Blue', hex: '#5b7083' },
+            { id: 'white', name: 'Studio White', hex: '#f7f7f7' },
+            { id: 'charcoal', name: 'Charcoal', hex: '#333333' }
+        ];
+
+        // Craft Supplies Catalog (30+ Real World Materials)
+        const MATERIAL_CATALOG = [
+            // BASES
+            { id: 'box', name: 'Cardboard Box', category: 'bases', shape: 'rect', width: 140, height: 100, color: '#d0aa78', icon: '📦' },
+            { id: 'paper_tube', name: 'Paper Roll Tube', category: 'bases', shape: 'rect_round', width: 45, height: 120, color: '#cfac7d', icon: '🧻' },
+            { id: 'popsicle_stick', name: 'Popsicle Stick', category: 'bases', shape: 'stick', width: 22, height: 130, color: '#e5c396', icon: '🥖' },
+            { id: 'egg_cup', name: 'Egg Carton Cup', category: 'bases', shape: 'circle', width: 70, height: 70, color: '#bfa075', icon: '🥚' },
+            { id: 'paper_plate', name: 'Paper Plate', category: 'bases', shape: 'circle', width: 150, height: 150, color: '#f5f5f0', icon: '🍽️' },
+            { id: 'foam_block', name: 'Craft Foam Block', category: 'bases', shape: 'rect', width: 110, height: 80, color: '#e27d60', icon: '🧱' },
+
+            // JOINERS & FASTENERS
+            { id: 'masking_tape', name: 'Masking Tape', category: 'joiners', shape: 'tape', width: 70, height: 35, color: '#f2e3c6', icon: '🩹' },
+            { id: 'bottle_cap', name: 'Bottle Cap', category: 'joiners', shape: 'circle', width: 40, height: 40, color: '#e63946', icon: '🟡' },
+            { id: 'pipe_cleaner', name: 'Pipe Cleaner', category: 'joiners', shape: 'line', width: 150, height: 14, color: '#457b9d', icon: '➰' },
+            { id: 'rubber_band', name: 'Rubber Band', category: 'joiners', shape: 'ellipse', width: 60, height: 40, color: '#f4a261', icon: '⭕' },
+            { id: 'glue_drop', name: 'Craft Glue Drop', category: 'joiners', shape: 'circle', width: 25, height: 25, color: '#a8dede', icon: '💧' },
+            { id: 'peg', name: 'Wooden Peg', category: 'joiners', shape: 'rect', width: 20, height: 70, color: '#d4a373', icon: '🧷' },
+
+            // DETAILS & ACCENTS
+            { id: 'googly_eye', name: 'Googly Eye', category: 'details', shape: 'eye', width: 32, height: 32, color: '#ffffff', icon: '👀' },
+            { id: 'pom_pom', name: 'Fluffy Pom Pom', category: 'details', shape: 'pompom', width: 45, height: 45, color: '#ffb703', icon: '🧶' },
+            { id: 'felt_star', name: 'Felt Star', category: 'details', shape: 'star', width: 50, height: 50, color: '#fb8500', icon: '⭐' },
+            { id: 'button', name: 'Craft Button', category: 'details', shape: 'button', width: 35, height: 35, color: '#2a9d8f', icon: '🔘' },
+            { id: 'feather', name: 'Craft Feather', category: 'details', shape: 'feather', width: 40, height: 110, color: '#e76f51', icon: '🪶' },
+            { id: 'gem', name: 'Sparkle Gem', category: 'details', shape: 'star', width: 30, height: 30, color: '#a2d2ff', icon: '💎' },
+
+            // NATURE MATERIALS
+            { id: 'pinecone', name: 'Pinecone', category: 'nature', shape: 'pinecone', width: 65, height: 90, color: '#6f4e37', icon: '🌲' },
+            { id: 'pebble', name: 'River Pebble', category: 'nature', shape: 'ellipse', width: 70, height: 50, color: '#8d99ae', icon: '🪨' },
+            { id: 'twig', name: 'Tree Twig', category: 'nature', shape: 'stick', width: 15, height: 140, color: '#582f0e', icon: '🌿' },
+            { id: 'leaf', name: 'Autumn Leaf', category: 'nature', shape: 'leaf', width: 60, height: 80, color: '#d97706', icon: '🍂' },
+
+            // PARTS & WHEELS
+            { id: 'toy_wheel', name: 'Toy Wheel', category: 'parts', shape: 'wheel', width: 50, height: 50, color: '#1d3557', icon: '🛞' },
+            { id: 'gear', name: 'Cardboard Gear', category: 'parts', shape: 'gear', width: 60, height: 60, color: '#ca6702', icon: '⚙️' },
+            { id: 'straw', name: 'Paper Straw', category: 'parts', shape: 'stick', width: 12, height: 150, color: '#ee9b00', icon: '🥤' }
+        ];
+
+        let canvas, ctx;
+        let itemsOnTable = [];
+        let selectedItemId = null;
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        let activeCategoryFilter = 'all';
+        let studioShelfGallery = [];
+        let wiggleTimer = null;
+        let wiggleTime = 0;
+
+        // Initialize App on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            renderSuppliesCatalog();
+            renderPaletteUI();
+            loadShelfFromStorage();
+            loadActiveTableFromStorage();
+            setupEventListeners();
+        });
+
+        function initCanvas() {
+            const container = document.getElementById('canvasContainer');
+            canvas = document.getElementById('workbenchCanvas');
+            ctx = canvas.getContext('2d');
+
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            const dpr = window.devicePixelRatio || 1;
+            
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            
+            renderCanvas();
+        }
+
+        function filterCategory(cat) {
+            activeCategoryFilter = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                btn.classList.remove('bg-studio-accent', 'text-white', 'active');
+                btn.classList.add('bg-stone-100', 'text-stone-700');
+            });
+            event.target.classList.add('bg-studio-accent', 'text-white', 'active');
+            event.target.classList.remove('bg-stone-100', 'text-stone-700');
+
+            renderSuppliesCatalog();
+        }
+
+        function renderSuppliesCatalog() {
+            const grid = document.getElementById('suppliesGrid');
+            grid.innerHTML = '';
+
+            const items = activeCategoryFilter === 'all' 
+                ? MATERIAL_CATALOG 
+                : MATERIAL_CATALOG.filter(m => m.category === activeCategoryFilter);
+
+            items.forEach(mat => {
+                const card = document.createElement('div');
+                card.className = 'bg-stone-50 hover:bg-amber-50/60 border border-stone-200 hover:border-amber-300 p-2.5 rounded-xl cursor-pointer transition craft-btn flex flex-col items-center justify-between text-center group';
+                card.onclick = () => addItemToCanvas(mat.id);
+
+                card.innerHTML = `
+                    <div class="text-3xl mb-1 group-hover:scale-110 transition-transform">${mat.icon}</div>
+                    <span class="text-xs font-semibold text-stone-800 leading-tight">${mat.name}</span>
+                    <span class="text-[10px] text-stone-400 mt-1 uppercase tracking-wider font-bold">+ Add</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderPaletteUI() {
+            const container = document.getElementById('colorPalette');
+            container.innerHTML = '';
+
+            CRAFT_COLORS.forEach(c => {
+                const btn = document.createElement('button');
+                btn.title = `Paint: ${c.name}`;
+                btn.className = 'w-5 h-5 rounded-full border border-stone-300 transition-transform transform hover:scale-110';
+                if (c.hex) {
+                    btn.style.backgroundColor = c.hex;
+                } else {
+                    btn.className += ' bg-amber-100 flex items-center justify-center text-[9px] text-amber-800 font-bold';
+                    btn.innerText = '✕';
+                }
+                btn.onclick = () => paintActiveItem(c.hex);
+                container.appendChild(btn);
+            });
+        }
+
+        function addItemToCanvas(materialId) {
+            const template = MATERIAL_CATALOG.find(m => m.id === materialId);
+            if (!template) return;
+
+            const container = document.getElementById('canvasContainer');
+            const centerX = (container.clientWidth / 2) + (Math.random() * 40 - 20);
+            const centerY = (container.clientHeight / 2) + (Math.random() * 40 - 20);
+
+            const newItem = {
+                instanceId: 'item_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                materialId: template.id,
+                name: template.name,
+                icon: template.icon,
+                shape: template.shape,
+                x: centerX,
+                y: centerY,
+                width: template.width,
+                height: template.height,
+                rotation: (Math.random() * 20 - 10) * Math.PI / 180,
+                scale: 1,
+                color: template.color,
+                paintColor: null,
+                hasSparkle: false,
+                zIndex: itemsOnTable.length
+            };
+
+            itemsOnTable.push(newItem);
+            selectedItemId = newItem.instanceId;
+
+            saveActiveTableToStorage();
+            renderCanvas();
+            renderLayersList();
+            showToast(`Added ${newItem.name} to workbench`, 'success');
+        }
+
+        function setupEventListeners() {
+            const container = document.getElementById('canvasContainer');
+
+            container.addEventListener('mousedown', handlePointerDown);
+            window.addEventListener('mousemove', handlePointerMove);
+            window.addEventListener('mouseup', handlePointerUp);
+
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) handlePointerDown(e.touches[0]);
+            }, { passive: false });
+            window.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    e.preventDefault();
+                    handlePointerMove(e.touches[0]);
+                }
+            }, { passive: false });
+            window.addEventListener('touchend', handlePointerUp);
+        }
+
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function handlePointerDown(e) {
+            const pos = getCanvasCoords(e);
+            
+            // Check top-most hit item (reverse z order)
+            const sorted = [...itemsOnTable].sort((a, b) => b.zIndex - a.zIndex);
+            
+            // First check if user clicked individual delete handle on selected item
+            if (selectedItemId) {
+                const active = itemsOnTable.find(i => i.instanceId === selectedItemId);
+                if (active && isDeleteHandleHit(active, pos)) {
+                    deleteItem(active.instanceId);
+                    return;
+                }
+            }
+
+            let found = null;
+            for (let item of sorted) {
+                if (isPosInsideItem(pos, item)) {
+                    found = item;
+                    break;
+                }
+            }
+
+            if (found) {
+                selectedItemId = found.instanceId;
+                isDragging = true;
+                dragOffset = {
+                    x: pos.x - found.x,
+                    y: pos.y - found.y
+                };
+            } else {
+                selectedItemId = null;
+            }
+
+            renderCanvas();
+            renderLayersList();
+        }
+
+        function handlePointerMove(e) {
+            if (!isDragging || !selectedItemId) return;
+            const pos = getCanvasCoords(e);
+
+            const active = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (active) {
+                active.x = pos.x - dragOffset.x;
+                active.y = pos.y - dragOffset.y;
+                renderCanvas();
+            }
+        }
+
+        function handlePointerUp() {
+            if (isDragging) {
+                isDragging = false;
+                saveActiveTableToStorage();
+            }
+        }
+
+        function isPosInsideItem(pos, item) {
+            const dx = pos.x - item.x;
+            const dy = pos.y - item.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const r = Math.max(item.width, item.height) * item.scale / 2;
+            return dist <= r;
+        }
+
+        function isDeleteHandleHit(item, pos) {
+            const handleX = item.x + (item.width * item.scale / 2) + 12;
+            const handleY = item.y - (item.height * item.scale / 2) - 12;
+            const dist = Math.sqrt(Math.pow(pos.x - handleX, 2) + Math.pow(pos.y - handleY, 2));
+            return dist <= 18;
+        }
+
+        function renderCanvas() {
+            const container = document.getElementById('canvasContainer');
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Toggle empty helper text
+            const emptyGuide = document.getElementById('canvasEmptyGuide');
+            if (itemsOnTable.length === 0) {
+                emptyGuide.classList.remove('hidden');
+            } else {
+                emptyGuide.classList.add('hidden');
+            }
+
+            // Update footer status
+            document.getElementById('partCountText').innerText = itemsOnTable.length;
+            const selectedTag = document.getElementById('selectedItemNameTag');
+            const activeItem = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (activeItem) {
+                selectedTag.classList.remove('hidden');
+                document.getElementById('selectedNameText').innerText = activeItem.name;
+            } else {
+                selectedTag.classList.add('hidden');
+            }
+
+            // Sort by zIndex before rendering
+            const renderQueue = [...itemsOnTable].sort((a, b) => a.zIndex - b.zIndex);
+
+            renderQueue.forEach(item => {
+                ctx.save();
+                
+                // Wiggle displacement if animating
+                let extraRot = 0;
+                let extraY = 0;
+                if (wiggleTimer) {
+                    extraRot = Math.sin(wiggleTime * 10 + item.zIndex) * 0.1;
+                    extraY = Math.cos(wiggleTime * 8 + item.zIndex) * 4;
+                }
+
+                ctx.translate(item.x, item.y + extraY);
+                ctx.rotate(item.rotation + extraRot);
+                ctx.scale(item.scale, item.scale);
+
+                // Draw Base Shape
+                drawItemShape(ctx, item);
+
+                // Draw Sparkles Overlay if enabled
+                if (item.hasSparkle) {
+                    drawSparklesOverlay(ctx, item);
+                }
+
+                ctx.restore();
+
+                // Draw Selection Highlight & Delete Handle
+                if (item.instanceId === selectedItemId) {
+                    drawSelectionOverlay(ctx, item);
+                }
+            });
+
+            if (wiggleTimer) {
+                wiggleTime += 0.05;
+            }
+        }
+
+        function drawItemShape(ctx, item) {
+            const hw = item.width / 2;
+            const hh = item.height / 2;
+            const fillColor = item.paintColor || item.color;
+
+            ctx.fillStyle = fillColor;
+            ctx.strokeStyle = '#5c4033';
+            ctx.lineWidth = 3;
+
+            switch(item.shape) {
+                case 'rect':
+                    ctx.beginPath();
+                    ctx.roundRect(-hw, -hh, item.width, item.height, 8);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'rect_round':
+                    ctx.beginPath();
+                    ctx.roundRect(-hw, -hh, item.width, item.height, 20);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'circle':
+                    ctx.beginPath();
+                    ctx.arc(0, 0, hw, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'ellipse':
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, hw, hh, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'stick':
+                    ctx.beginPath();
+                    ctx.roundRect(-hw, -hh, item.width, item.height, 10);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                case 'eye':
+                    ctx.beginPath();
+                    ctx.arc(0, 0, hw, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                    ctx.stroke();
+                    // Pupil
+                    ctx.beginPath();
+                    ctx.arc(-hw*0.2, -hh*0.1, hw*0.4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#000000';
+                    ctx.fill();
+                    break;
+
+                case 'pompom':
+                    ctx.beginPath();
+                    ctx.arc(0, 0, hw, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    break;
+
+                case 'star':
+                    drawStar(ctx, 0, 0, 5, hw, hw/2);
+                    ctx.fill();
+                    ctx.stroke();
+                    break;
+
+                default:
+                    ctx.beginPath();
+                    ctx.roundRect(-hw, -hh, item.width, item.height, 8);
+                    ctx.fill();
+                    ctx.stroke();
+            }
+
+            // Draw Icon watermark inside
+            ctx.font = `${Math.min(item.width, item.height) * 0.5}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(item.icon, 0, 0);
+        }
+
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+        }
+
+        function drawSparklesOverlay(ctx, item) {
+            ctx.fillStyle = '#ffdf00';
+            const hw = item.width / 2;
+            const hh = item.height / 2;
+
+            for (let i = 0; i < 4; i++) {
+                const sx = (Math.sin(i * 1.5) * hw * 0.6);
+                const sy = (Math.cos(i * 2.1) * hh * 0.6);
+                ctx.fillText('✨', sx, sy);
+            }
+        }
+
+        function drawSelectionOverlay(ctx, item) {
+            ctx.save();
+            ctx.translate(item.x, item.y);
+            ctx.rotate(item.rotation);
+
+            const hw = (item.width * item.scale) / 2 + 8;
+            const hh = (item.height * item.scale) / 2 + 8;
+
+            ctx.strokeStyle = '#e06d53';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(-hw, -hh, hw * 2, hh * 2);
+            ctx.setLineDash([]);
+
+            // Draw Red Delete Handle Button at top right
+            const deleteX = hw + 4;
+            const deleteY = -hh - 4;
+
+            ctx.fillStyle = '#e11d48';
+            ctx.beginPath();
+            ctx.arc(deleteX, deleteY, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✕', deleteX, deleteY);
+
+            ctx.restore();
+        }
+
+        function rotateActiveItem(deg) {
+            if (!selectedItemId) return;
+            const item = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (item) {
+                item.rotation += (deg * Math.PI / 180);
+                saveActiveTableToStorage();
+                renderCanvas();
+            }
+        }
+
+        function scaleActiveItem(factor) {
+            if (!selectedItemId) return;
+            const item = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (item) {
+                item.scale = Math.max(0.3, Math.min(3.0, item.scale * factor));
+                saveActiveTableToStorage();
+                renderCanvas();
+            }
+        }
+
+        function changeActiveLayer(direction) {
+            if (!selectedItemId) return;
+            const item = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (item) {
+                item.zIndex += direction;
+                saveActiveTableToStorage();
+                renderCanvas();
+                renderLayersList();
+            }
+        }
+
+        function paintActiveItem(hexColor) {
+            if (!selectedItemId) {
+                showToast('Select an item on table to paint it!', 'info');
+                return;
+            }
+            const item = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (item) {
+                item.paintColor = hexColor;
+                saveActiveTableToStorage();
+                renderCanvas();
+                showToast(`Painted ${item.name}`, 'success');
+            }
+        }
+
+        function toggleActiveSparkle() {
+            if (!selectedItemId) {
+                showToast('Select an item to add glitter sparkles!', 'info');
+                return;
+            }
+            const item = itemsOnTable.find(i => i.instanceId === selectedItemId);
+            if (item) {
+                item.hasSparkle = !item.hasSparkle;
+                saveActiveTableToStorage();
+                renderCanvas();
+            }
+        }
+
+        function deleteItem(instanceId) {
+            itemsOnTable = itemsOnTable.filter(i => i.instanceId !== instanceId);
+            if (selectedItemId === instanceId) selectedItemId = null;
+
+            saveActiveTableToStorage();
+            renderCanvas();
+            renderLayersList();
+            showToast('Item removed from table', 'info');
+        }
+
+        function deselectItem() {
+            selectedItemId = null;
+            renderCanvas();
+            renderLayersList();
+        }
+
+        function renderLayersList() {
+            const container = document.getElementById('layersList');
+            container.innerHTML = '';
+
+            if (itemsOnTable.length === 0) {
+                container.innerHTML = `<p class="text-xs text-stone-400 p-3 text-center italic">No items on workbench yet.</p>`;
+                return;
+            }
+
+            const sorted = [...itemsOnTable].sort((a, b) => b.zIndex - a.zIndex);
+
+            sorted.forEach(item => {
+                const isSelected = item.instanceId === selectedItemId;
+                const row = document.createElement('div');
+                row.className = `p-2 rounded-xl text-xs flex items-center justify-between border cursor-pointer transition ${isSelected ? 'bg-amber-50 border-amber-300 font-bold text-stone-900' : 'bg-stone-50 border-stone-200 hover:bg-stone-100 text-stone-700'}`;
+                row.onclick = () => {
+                    selectedItemId = item.instanceId;
+                    renderCanvas();
+                    renderLayersList();
+                };
+
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2 truncate">
+                        <span class="text-base">${item.icon}</span>
+                        <span class="truncate">${item.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="event.stopPropagation(); deleteItem('${item.instanceId}')" title="Delete Part" class="p-1 text-stone-400 hover:text-rose-600">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function triggerWiggleAnimation() {
+            if (wiggleTimer) return;
+            wiggleTime = 0;
+            wiggleTimer = setInterval(() => {
+                renderCanvas();
+            }, 30);
+
+            showToast('🎉 Wiggling your craft creation!', 'success');
+
+            setTimeout(() => {
+                clearInterval(wiggleTimer);
+                wiggleTimer = null;
+                renderCanvas();
+            }, 2000);
+        }
+
+        function saveActiveTableToStorage() {
+            try {
+                localStorage.setItem(STORAGE_CURRENT_CANVAS, JSON.stringify(itemsOnTable));
+                triggerAutoSaveBadge();
+            } catch (err) {
+                console.error('Failed auto-saving workbench:', err);
+            }
+        }
+
+        function loadActiveTableFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_CURRENT_CANVAS);
+                if (saved) {
+                    itemsOnTable = JSON.parse(saved);
+                    renderCanvas();
+                    renderLayersList();
+                }
+            } catch (err) {
+                console.error('Error loading active workbench:', err);
+            }
+        }
+
+        function triggerAutoSaveBadge() {
+            const badge = document.getElementById('autoSaveBadge');
+            if (badge) {
+                badge.classList.remove('bg-emerald-100', 'text-emerald-800');
+                badge.classList.add('bg-amber-200', 'text-amber-900');
+                setTimeout(() => {
+                    badge.classList.remove('bg-amber-200', 'text-amber-900');
+                    badge.classList.add('bg-emerald-100', 'text-emerald-800');
+                }, 300);
+            }
+        }
+
+        function promptSaveCraft() {
+            if (itemsOnTable.length === 0) {
+                showToast('Add some craft materials before saving!', 'info');
+                return;
+            }
+
+            const title = prompt('Give your craft creation a title:', 'My DIY Creation');
+            if (!title) return;
+
+            const snapshotUrl = canvas.toDataURL('image/png');
+
+            const newCraft = {
+                id: 'shelf_' + Date.now(),
+                title: title.trim(),
+                date: new Date().toLocaleDateString(),
+                items: JSON.parse(JSON.stringify(itemsOnTable)),
+                thumbnail: snapshotUrl
+            };
+
+            studioShelfGallery.unshift(newCraft);
+            saveShelfToStorage();
+            showToast(`Saved "${newCraft.title}" to your Studio Shelf!`, 'success');
+        }
+
+        function saveShelfToStorage() {
+            try {
+                localStorage.setItem(STORAGE_SHELF_GALLERY, JSON.stringify(studioShelfGallery));
+                updateShelfBadge();
+            } catch (err) {
+                console.error('Failed saving shelf:', err);
+            }
+        }
+
+        function loadShelfFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_SHELF_GALLERY);
+                if (saved) {
+                    studioShelfGallery = JSON.parse(saved);
+                }
+                updateShelfBadge();
+            } catch (err) {
+                console.error('Error loading shelf:', err);
+            }
+        }
+
+        function updateShelfBadge() {
+            document.getElementById('shelfCountBadge').innerText = studioShelfGallery.length;
+        }
+
+        function openGalleryModal() {
+            const modal = document.getElementById('modalGallery');
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+
+            if (studioShelfGallery.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center">
+                        <i class="fa-solid fa-box-open text-4xl text-plywood-300 mb-2"></i>
+                        <p class="text-sm font-semibold text-stone-600">Your Studio Shelf is Empty</p>
+                        <p class="text-xs text-stone-400 mt-1">Build something on the table and click "Save Craft" to put it here!</p>
+                    </div>
+                `;
+            } else {
+                studioShelfGallery.forEach(craft => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-stone-50 border border-stone-200 rounded-2xl p-3 flex flex-col justify-between shadow-sm hover:border-amber-300 transition';
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="w-full h-36 bg-plywood-100 rounded-xl overflow-hidden border border-plywood-200 mb-2.5 flex items-center justify-center">
+                                <img src="${craft.thumbnail}" class="w-full h-full object-contain">
+                            </div>
+                            <h4 class="font-display font-bold text-stone-800 text-sm truncate">${escapeHtml(craft.title)}</h4>
+                            <p class="text-[11px] text-stone-400">Saved: ${craft.date} • ${craft.items.length} parts</p>
+                        </div>
+                        <div class="flex items-center space-x-2 pt-3 border-t border-stone-200/60 mt-3">
+                            <button onclick="loadCraftFromGallery('${craft.id}')" class="flex-1 py-1.5 bg-studio-accent hover:bg-studio-accentHover text-white font-bold text-xs rounded-xl transition">
+                                Load to Table
+                            </button>
+                            <button onclick="deleteCraftFromGallery('${craft.id}')" class="p-1.5 text-rose-500 hover:text-rose-700">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeGalleryModal() {
+            document.getElementById('modalGallery').classList.add('hidden');
+        }
+
+        function loadCraftFromGallery(craftId) {
+            const craft = studioShelfGallery.find(c => c.id === craftId);
+            if (craft) {
+                itemsOnTable = JSON.parse(JSON.stringify(craft.items));
+                selectedItemId = null;
+                saveActiveTableToStorage();
+                renderCanvas();
+                renderLayersList();
+                closeGalleryModal();
+                showToast(`Loaded "${craft.title}" onto workbench`, 'success');
+            }
+        }
+
+        function deleteCraftFromGallery(craftId) {
+            openConfirmationModal('Delete Saved Craft?', 'Remove this project permanently from your Studio Shelf?', () => {
+                studioShelfGallery = studioShelfGallery.filter(c => c.id !== craftId);
+                saveShelfToStorage();
+                openGalleryModal();
+                showToast('Craft removed from gallery', 'info');
+            });
+        }
+
+        function confirmClearWorkbench() {
+            if (itemsOnTable.length === 0) return;
+            openConfirmationModal('Clear Workbench Table?', 'Remove all parts from the table? (Make sure to save your craft first if you want to keep it!)', () => {
+                itemsOnTable = [];
+                selectedItemId = null;
+                saveActiveTableToStorage();
+                renderCanvas();
+                renderLayersList();
+                showToast('Workbench table cleared', 'info');
+            });
+        }
+
+        function toggleIdeaBookModal() {
+            const modal = document.getElementById('modalIdeaBook');
+            const container = document.getElementById('blueprintsContainer');
+            
+            if (modal.classList.contains('hidden')) {
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="border border-stone-200 p-4 rounded-2xl bg-amber-50/50 space-y-2">
+                            <span class="text-3xl">🤖</span>
+                            <h4 class="font-bold text-stone-800 text-sm">Cardboard Robot Buddy</h4>
+                            <p class="text-xs text-stone-500">Combine: Cardboard Box + Paper Roll Tube + Bottle Caps + Googly Eyes!</p>
+                        </div>
+                        <div class="border border-stone-200 p-4 rounded-2xl bg-amber-50/50 space-y-2">
+                            <span class="text-3xl">🏎️</span>
+                            <h4 class="font-bold text-stone-800 text-sm">Popsicle Race Car</h4>
+                            <p class="text-xs text-stone-500">Combine: Paper Roll Tube + 4 Toy Wheels + Pipe Cleaner + Star Stickers!</p>
+                        </div>
+                        <div class="border border-stone-200 p-4 rounded-2xl bg-amber-50/50 space-y-2">
+                            <span class="text-3xl">🌲</span>
+                            <h4 class="font-bold text-stone-800 text-sm">Nature Pinecone Owl</h4>
+                            <p class="text-xs text-stone-500">Combine: Pinecone + Googly Eyes + Autumn Leaf wings + Twig perch!</p>
+                        </div>
+                        <div class="border border-stone-200 p-4 rounded-2xl bg-amber-50/50 space-y-2">
+                            <span class="text-3xl">🪶</span>
+                            <h4 class="font-bold text-stone-800 text-sm">Fancy Paper Plate Bird</h4>
+                            <p class="text-xs text-stone-500">Combine: Paper Plate + Craft Feathers + Buttons + Sparkle Gems!</p>
+                        </div>
+                    </div>
+                `;
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function openConfirmationModal(title, message, onConfirm) {
+            const modal = document.getElementById('modalConfirm');
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+
+            const btnOk = document.getElementById('btnConfirmOk');
+            const btnCancel = document.getElementById('btnConfirmCancel');
+
+            const handleOk = () => {
+                onConfirm();
+                close();
+            };
+
+            const close = () => {
+                modal.classList.add('hidden');
+                btnOk.removeEventListener('click', handleOk);
+            };
+
+            btnOk.onclick = handleOk;
+            btnCancel.onclick = close;
+
+            modal.classList.remove('hidden');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bg = type === 'success' ? 'bg-emerald-800 text-white' : type === 'error' ? 'bg-rose-800 text-white' : 'bg-stone-800 text-white';
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-info';
+
+            toast.className = `${bg} px-3.5 py-2 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHtml(msg)}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity');
+                setTimeout(() => toast.remove(), 300);
+            }, 2200);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
